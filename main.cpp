@@ -1,52 +1,20 @@
 #include <iostream>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <valarray>
 
 #include "matrix.h"
 #include "3D.h"
+#include "Scene.h"
+#include "gameObject.h"
+#include "polyhedron.h"
 
-const int WIDTH = 800, HEIGHT = 600;
+const int WIDTH = 600, HEIGHT = 600;
 
-Matrix test(3);
+int main(int argc, char* argv[]) {
 
-int main(int argv, char** args){
-
-  //matrix test
-  for(int r = 0; r<3; r++){
-    for(int c = 0; c<3; c++){
-      test(r,c) = c+1 + (r*3);
-    } 
-  }
-
-  std::cout << std:: endl;
-
-  test.print();
-
-  test = test*test;
-
-  test.print();
-
-  //inner prod test
-  std::valarray<double> a(3);
-  std::valarray<double> b(3);
-  for(int i = 0; i<3; i++){
-    a[i] = i+1;
-    b[i] = (i+1);
-  }
-
-  Matrix I(3);
-  I.zeros();
-
-  for(int i = 0; i <3; i++){
-    I(i,i) = 1;
-  }
-
-  b = I*a;
-
-  for(int i = 0; i <3; i++){
-    std::cout << b[i] << " ";
-  }
-
+  Vec3D p = {0, 0, 15};
+  Cube test;
+  Cube test2(p, 10);
 
   bool quit = false;
   
@@ -68,8 +36,17 @@ int main(int argv, char** args){
   }
 
   renderer = SDL_CreateRenderer(window, -1, 0);
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+  Scene* gameScene = new Scene(renderer);
+  gameScene->CreateObject();
+
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
+
+  //gameScene->DrawPoints(test2.getVerts());
+  gameScene->DrawPolys(test.getPolys());
+
+  //gameScene->Draw();
 
   SDL_RenderPresent(renderer);
   
