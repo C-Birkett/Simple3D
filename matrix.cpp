@@ -32,8 +32,8 @@ std::valarray<double> Matrix::operator*(std::valarray<double> M2){
   //std::assert("Matrix multiplication correct size", M1->cols == M2->rows);
   std::valarray<double> output(M2.size());
   
-  for(int r = 0; r < M1->rows; r++){
-    output[r] = (M1->row(r)*M2).sum();
+  for(int c = 0; c < M1->cols; c++){
+    output[c] = (M1->col(c)*M2).sum();
   }
   return output;
 }
@@ -41,7 +41,7 @@ std::valarray<double> Matrix::operator*(std::valarray<double> M2){
 void Matrix::print(){
   for(int r = 0; r< this->rows; r++){
     for(int c = 0; c< this->cols; c++){
-      std::cout << " " << this->data[r*cols + c];
+        std::cout << " " << this->data[static_cast<size_t>(r * cols + c)];
     } 
     std::cout << std::endl;
   }

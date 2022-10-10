@@ -22,7 +22,7 @@ void Camera::genCamMat(){
   out(3, 2) = -zAxis.dot(pos);
   out(3, 3) = 1;
 
-  out.print();
+  //out.print();
 
   *this->camMat = out;
 }
@@ -34,23 +34,19 @@ void Camera::genClipMat(){
   out(0,0) = this->fov*this->aspectRatio;
   out(1,1) = this->fov;
   out(2,2) = (far+near)/(far-near);
-  out(2,3) = (2*near*far)/(near-far);
-  out(3,2) = 1;
+  out(2,3) = 1;
+  out(3, 2) = (2 * near * far) / (near - far);
 
   *this->clipMat = out;
 }
 
 SDL_Point Camera::Project(Vec3D v3D){
   //generalised vector
-  std::valarray<double> v3Dgen(0.0, 4);
-  for(int i=0; i<3; i++){
-    v3Dgen[i] = v3D.v[i];
-  }
+  std::valarray<double> v3Dgen = v3D.generalise();
 
-  //set w = 1
-  v3Dgen[3] = 1;
-
-  v3Dgen = *this->camMat * v3Dgen;
+  //apply inverse camera transform and clipping matrices
+  //v3Dgen = *this->camMat * v3Dgen;
+  
   v3Dgen = *this->clipMat * v3Dgen;
 
   SDL_Point out;

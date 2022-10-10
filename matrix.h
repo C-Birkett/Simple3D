@@ -13,8 +13,8 @@ class Matrix{
   public:
 
     //can have square mats
-    Matrix(int r, int c) : data(r*c), rows(r), cols(c){};
-    Matrix(int s) : data(s*s), rows(s), cols(s){};
+    Matrix(int r, int c) : data(r* c), rows(r), cols(c) {this->zeros();};
+    Matrix(int s) : data(s* s), rows(s), cols(s) {this->zeros();}
 
     ~Matrix() {};
 

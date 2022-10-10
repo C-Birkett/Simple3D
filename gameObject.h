@@ -5,20 +5,25 @@
 
 class GameObject{
   protected:
+    
+
+  public:
     Scene* scene;
 
     Vec3D pos;
     Vec3D vel;
     Vec3D acc;
 
-  public:
-  GameObject(){};
-  ~GameObject(){};
+    Vec3D theta;
+    Vec3D omega;
 
-  virtual void Update(){
-    vel.v += acc.v;
-    pos.v += vel.v;
-  }
+    GameObject(){};
+    ~GameObject(){};
 
-  virtual void Draw(){};
+    virtual void Update(){
+        //vel.v += acc.v;
+        //pos.v += vel.v;
+    }
+
+    virtual void Draw(){};
 };

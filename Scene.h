@@ -26,6 +26,10 @@ class Scene{
     Scene(SDL_Renderer* r);
     ~Scene(){};
 
+    double deltaTime;
+
+    void Update();
+
     void Draw();
     
     void DrawPolys(std::vector<S3D::Polygon> polys);
@@ -33,4 +37,6 @@ class Scene{
     void DrawPoints(std::vector<Vec3D> pts);
 
     GameObject* CreateObject();
+
+    GameObject* GetObject(int i) { return objects[i]; }
 };

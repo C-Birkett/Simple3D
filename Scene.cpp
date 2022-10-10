@@ -11,6 +11,14 @@ Scene::Scene(SDL_Renderer* r){
   camera = new Camera(this);
 }
 
+void Scene::Draw() {
+    for (auto& o : this->objects) { o->Draw(); }
+}
+
+void Scene::Update() {
+    for (auto& o : this->objects) { o->Update(); }
+}
+
 std::vector<SDL_Point> Scene::Project3DPolyTo2D(S3D::Polygon p3D){
   int nverts = p3D.verts.size();
   std::vector<SDL_Point> out(nverts);
@@ -31,10 +39,6 @@ std::vector<SDL_Point> Scene::Project3DPointsTo2D(std::vector<Vec3D> pts){
   return out;
 }
 
-void Scene::Draw(){
-  for(auto o : objects){o->Draw();}
-}
-
 void Scene::DrawPolys(std::vector<S3D::Polygon> polys){
   for(const auto &p : polys){
     std::vector<SDL_Point> pts2D = this->Project3DPolyTo2D(p);
@@ -50,8 +54,9 @@ void Scene::DrawPoints(std::vector<Vec3D> pts){
 }
 
 GameObject* Scene::CreateObject(){
-  Vec3D pos(200,200,200);
+  Vec3D pos(0,0,20);
   auto testCube = new Cube(pos, 100);
+  testCube->scene = this;
   this->objects.push_back(testCube);
   return testCube;
 }

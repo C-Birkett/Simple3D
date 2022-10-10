@@ -14,7 +14,14 @@ class Polyhedron : public GameObject{
     ~Polyhedron(){};
 
     void Update();
-    void Draw(){scene->DrawPoints(vertices);}
+    void Draw(){scene->DrawPolys(polys);}
+    //void Draw() { scene->DrawPoints(vertices); }
+
+    void Rotate(double x, double y, double z);
+    void Rotate(Vec3D rot);
+
+    void Translate(double x, double y, double z);
+    void Translate(Vec3D t);
 
     std::vector<Vec3D> getVerts(){return vertices;}
     std::vector<S3D::Polygon> getPolys(){return polys;}
