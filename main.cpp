@@ -7,11 +7,12 @@
 #include "Scene.h"
 #include "gameObject.h"
 #include "polyhedron.h"
+#include "camera.h"
 
 #define FPS_POLL_INTERVAL 1.0 //seconds
 #define FPS_TARGET 60.0f
 
-const int WIDTH = 600, HEIGHT = 600;
+//const int WIDTH = 600, HEIGHT = 600;
 
 int main(int argc, char* argv[]) {
 
@@ -78,16 +79,80 @@ int main(int argc, char* argv[]) {
   SDL_Event event;
   while(!quit) {
     //exit if quit
+
+
+
     if(SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
           quit = true;
           break;
+        
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym) {
+                case SDLK_w: 
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 10);
+                    break;
+
+                case SDLK_a:
+                    gameScene->getCamera()->vel = Vec3D(-10, 0, 0);
+                    break;
+
+                case SDLK_s:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, -10);
+                    break;
+                
+                case SDLK_d:
+                    gameScene->getCamera()->vel = Vec3D(10, 0, 0);
+                    break;
+                case SDLK_SPACE:
+                    gameScene->getCamera()->vel = Vec3D(0, -10, 0);
+                    break;
+                case SDLK_LSHIFT:
+                    gameScene->getCamera()->vel = Vec3D(0, 10, 0);
+                    break;
+
+            }
+            break;
+        case SDL_KEYUP:
+            switch (event.key.keysym.sym) {
+                case SDLK_w:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+                
+                case SDLK_a:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+
+                case SDLK_s:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+
+                case SDLK_d:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+
+                case SDLK_SPACE:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+
+                case SDLK_LSHIFT:
+                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
+                    break;
+            }
+            break;
       }
     }
 
-    //gameScene->Update();
+
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    gameScene->Update();
     gameScene->Draw();
+
+    SDL_RenderPresent(renderer);
 
     //get deltatime between frames
     fps_last = fps_now;
@@ -104,7 +169,7 @@ int main(int argc, char* argv[]) {
         fps_lasttime = SDL_GetTicks();
         fps_current = fps_frames;
         fps_frames = 0;
-        std::cout << fps_current << std::endl;
+        //std::cout << fps: << fps_current << std::endl;
     }
 
     //wait to maintain target framerate

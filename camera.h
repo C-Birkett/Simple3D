@@ -9,7 +9,7 @@
 
 const int WIDTH = 600, HEIGHT = 600;
 
-class Camera : GameObject{
+class Camera : public GameObject{
   private:
     Vec3D target;
     Vec3D up;
@@ -55,5 +55,7 @@ class Camera : GameObject{
 
     void Update();
 
-    SDL_Point Project(Vec3D v3D);
+    bool ViewClip(std::valarray<double> v3D);
+
+    SDL_Point Project(Vec3D* v3D);
 };

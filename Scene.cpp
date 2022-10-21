@@ -16,7 +16,8 @@ void Scene::Draw() {
 }
 
 void Scene::Update() {
-    for (auto& o : this->objects) { o->Update(); }
+    //for (auto& o : this->objects) { o->Update(); }
+    this->camera->Update();
 }
 
 std::vector<SDL_Point> Scene::Project3DPolyTo2D(S3D::Polygon p3D){
@@ -24,7 +25,32 @@ std::vector<SDL_Point> Scene::Project3DPolyTo2D(S3D::Polygon p3D){
   std::vector<SDL_Point> out(nverts);
 
   for(int i=0; i < nverts; i++){
-    out.at(i) = this->camera->Project(*(p3D.verts.at(i)));
+      auto& vert = p3D.verts.at(i);
+      
+      /*
+
+      //check for lines intersecting near clip plane
+      //if vert outside near clip
+      if (this->camera->ViewClip(vert->generalise())) {
+          
+          
+          // check next vert
+          if (this->camera->ViewClip((vert + 1)->generalise())) {
+              continue; //don't draw
+          }
+          // find intersection
+          else {
+
+          }
+      }
+      else {
+          // find intersection of vert with near clip plane
+
+
+      }
+      */
+
+      out.at(i) = (this->camera->Project(vert));
   }
 
   return out;
@@ -33,7 +59,7 @@ std::vector<SDL_Point> Scene::Project3DPolyTo2D(S3D::Polygon p3D){
 std::vector<SDL_Point> Scene::Project3DPointsTo2D(std::vector<Vec3D> pts){
   std::vector<SDL_Point> out(pts.size());
     for(int i=0; i < (int)pts.size(); i++){
-      out.at(i) = this->camera->Project(pts.at(i));
+      out.at(i) = this->camera->Project(&(pts.at(i)));
     }
 
   return out;

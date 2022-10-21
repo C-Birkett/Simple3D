@@ -32,6 +32,9 @@ class Matrix{
 
     //matrix ops with vectors
     std::valarray<double> operator*(std::valarray<double> M2);
+    //std::valarray<double> operator*(Vec3D v) {
+    //    return *this * v.v;
+    //}
     
     //populate with zeros
     void zeros(){this->data = 0.0;};

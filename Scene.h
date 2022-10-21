@@ -26,6 +26,8 @@ class Scene{
     Scene(SDL_Renderer* r);
     ~Scene(){};
 
+    Camera* getCamera() { return camera; }
+
     double deltaTime;
 
     void Update();

@@ -14,6 +14,8 @@ class GameObject{
     Vec3D vel;
     Vec3D acc;
 
+    void setVel(Vec3D v) { this->vel = v; }
+
     Vec3D theta;
     Vec3D omega;
 

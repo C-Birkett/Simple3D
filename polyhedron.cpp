@@ -74,7 +74,7 @@ Cube::Cube() {
 
     //store all 6 faces as polys
     //tedious but works -> probably a smarter way of finding these polys
-    int faceIndices[24] = {1,2,3,4, 5,6,7,8, 1,2,6,5, 3,4,8,7, 2,3,7,6, 1,4,5,8};   //1 indexed
+    int faceIndices[24] = { 1,2,3,4, 5,6,7,8, 1,2,6,5, 3,4,8,7, 2,3,7,6, 1,4,8,5 };   //1 indexed
 
     for (int i = 0; i < 6; i++) {
         S3D::Polygon p;
@@ -124,7 +124,7 @@ Cube::Cube(Vec3D p, double l){
 
   //store all 6 faces as polys
   //tedious but works -> probably a smarter way of finding these polys
-  int faceIndices[24] = { 1,2,3,4, 5,6,7,8, 1,2,6,5, 3,4,8,7, 2,3,7,6, 1,4,5,8 };   //1 indexed
+  int faceIndices[24] = { 1,2,3,4, 5,6,7,8, 1,2,6,5, 3,4,8,7, 2,3,7,6, 1,4,8,5 };   //1 indexed
 
   for (int i = 0; i < 6; i++) {
       S3D::Polygon p;

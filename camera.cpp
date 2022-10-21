@@ -4,6 +4,10 @@ void Camera::genCamMat(){
   Matrix out(4);
   out.zeros();
 
+  // translate to camera pos
+  out = S3D::translateMatrix(- this->pos);
+
+  /*
   Vec3D zAxis = (this->target - this->pos).normalise();
   Vec3D xAxis = (this->up.cross(zAxis)).normalise();
   Vec3D yAxis = (zAxis.cross(xAxis)).normalise();
@@ -21,7 +25,7 @@ void Camera::genCamMat(){
   out(3, 1) = -yAxis.dot(pos);
   out(3, 2) = -zAxis.dot(pos);
   out(3, 3) = 1;
-
+  */
   //out.print();
 
   *this->camMat = out;
@@ -37,29 +41,48 @@ void Camera::genClipMat(){
   out(2,3) = 1;
   out(3, 2) = (2 * near * far) / (near - far);
 
+
+
   *this->clipMat = out;
 }
 
-SDL_Point Camera::Project(Vec3D v3D){
-  //generalised vector
-  std::valarray<double> v3Dgen = v3D.generalise();
 
-  //apply inverse camera transform and clipping matrices
-  //v3Dgen = *this->camMat * v3Dgen;
+bool Camera::ViewClip(std::valarray<double> v3D) {
+    
+    //apply inverse camera transform and clipping matrices
+    v3D = *this->camMat * v3D;
+
+    // geometry clipping
+    if (v3D[3] < near) {
+        return false;
+    }
+    else  return true;
+}
+
+
+ SDL_Point Camera::Project(Vec3D* v3D){
+
+    //generalised vector
+    std::valarray<double> v3Dgen = v3D->generalise();
+
+    //apply inverse camera transform and clipping matrices
+    // TODO dont fo this transform twice
+    v3Dgen = *this->camMat * v3Dgen;
+
+    v3Dgen = *this->clipMat * v3Dgen;
+
+    SDL_Point out;
+    out.x = (v3Dgen[0]*WIDTH) / (2.0*v3Dgen[3]) + (WIDTH/2);
+    out.y = (v3Dgen[1]*HEIGHT) / (2.0*v3Dgen[3]) + (HEIGHT/2);
   
-  v3Dgen = *this->clipMat * v3Dgen;
-
-  SDL_Point out;
-  out.x = (v3Dgen[0]*WIDTH) / (2.0*v3Dgen[3]) + (WIDTH/2);
-  out.y = (v3Dgen[1]*HEIGHT) / (2.0*v3Dgen[3]) + (HEIGHT/2);
-  return out;
+    return out;
 }
 
 void Camera::Update(){
   Vec3D zero;
   if((this->vel != zero) || (this->acc != zero)){
-        this->vel.v *= this->acc.v;
-        this->pos.v *= this->vel.v;
+        this->vel += this->acc;
+        this->pos += this->vel;
 
         this->genCamMat();
       } 
