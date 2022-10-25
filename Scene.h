@@ -40,5 +40,12 @@ class Scene{
 
     GameObject* CreateObject();
 
+    GameObject* CreateCube(Vec3D pos, double size);
+    
+    /*  TODO figure this out
+    template <class T>
+    GameObject* CreateObject<T>(Vec3D pos);
+    */
+
     GameObject* GetObject(int i) { return objects[i]; }
 };

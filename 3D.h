@@ -94,6 +94,11 @@ class Vec3D{
       return v2-v1;
   }
 
+  void operator-=(Vec3D v2) {
+      auto& v1 = *this;
+      v1.v = v1.v - v2.v;
+  }
+
   Vec3D operator+(Vec3D v2){
     auto &v1 = *this;
     Vec3D out;

@@ -32,8 +32,7 @@ class Camera : public GameObject{
     
     Camera(Scene* s){
       this->scene = s;
-      //pos = {0,0,0};
-      pos = {3,3,3};
+      pos = {0,0,0};
       target = {0,0,0}; //look in world z
       up = {0,1,0}; //up = world y
 
@@ -51,6 +50,11 @@ class Camera : public GameObject{
 
     ~Camera(){};
     
+    void incrementFar(double far) { 
+        this->far += far;
+        this->genClipMat();
+    }
+
     void Draw(){};
 
     void Update();

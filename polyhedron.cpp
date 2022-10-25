@@ -3,22 +3,23 @@
 void Polyhedron::Update() {
     double dt = this->scene->deltaTime;
 
-    //accellerate
+    // accellerate
     Vec3D dv = this->acc * dt;
     this->vel.translate(dv);
 
+    // rotate
+    this->omega.v *= 0.975;
     Vec3D dTheta = this->omega * dt;
     this->theta.translate(dTheta);
-    //this->theta.print();
     
-    //move
+    // move
     Vec3D dx = this->vel * dt;
     this->pos.translate(dx);
 
-    //move vertices
+    // move vertices
     for (auto& v : this->vertices) {
         v.translate(dx);
-        v.rotate(pos, dTheta);
+        v.rotate(this->pos, dTheta);
     }
 }
 
@@ -59,17 +60,15 @@ Cube::Cube() {
     this->theta.v = { 0,0,0 };
     this->omega.v = { 0,0,0 };
 
-    this->theta.print();
-
     this->vertices.reserve(8);
     this->polys.reserve(6);
 
     //gen vertices
-    for (int i = 0; i <= 1; i++) {
-        this->vertices.emplace_back(Vec3D(i, 0, 0));
-        this->vertices.emplace_back(Vec3D(i, 1, 0));
-        this->vertices.emplace_back(Vec3D(i, 1, 1));
-        this->vertices.emplace_back(Vec3D(i, 0, 1));
+    for (float i = -0.5f; i < 0.4f; i++) {
+        this->vertices.emplace_back(Vec3D(i, -0.5, -0.5));
+        this->vertices.emplace_back(Vec3D(i, 0.5, -0.5));
+        this->vertices.emplace_back(Vec3D(i, 0.5, 0.5));
+        this->vertices.emplace_back(Vec3D(i, -0.5, 0.5));
     }
 
     //store all 6 faces as polys
@@ -105,18 +104,16 @@ Cube::Cube(Vec3D p, double l){
     this->acc.v = { 0,0,0 };
     this->theta.v = { 0,0,0 };
     this->omega.v = { 0,0,0 };
-
-    this->theta.print();
   
   this->vertices.reserve(8);
   this->polys.reserve(6);
 
   //gen vertices scaled to l
   for (int i = 0; i <= 1; i++) {
-      this->vertices.emplace_back(Vec3D(i, 0, 0)*l);
-      this->vertices.emplace_back(Vec3D(i, 1, 0)*l);
-      this->vertices.emplace_back(Vec3D(i, 1, 1)*l);
-      this->vertices.emplace_back(Vec3D(i, 0, 1)*l);
+      this->vertices.emplace_back(Vec3D(-0.5 + i, -0.5, -0.5)*l);
+      this->vertices.emplace_back(Vec3D(-0.5 + i, 0.5, -0.5)*l);
+      this->vertices.emplace_back(Vec3D(-0.5 + i, 0.5, 0.5)*l);
+      this->vertices.emplace_back(Vec3D(-0.5 + i, -0.5, 0.5)*l);
   }
 
   //move to pos

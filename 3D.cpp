@@ -25,10 +25,10 @@ Vec3D Vec3D::normalise(){
 }
 
 Vec3D Vec3D::rotate(double x, double y, double z) {//wrt axes
-	Vec3D out;
-	out.v = S3D::rotateMatrix(x, y, z) * this->v;
-	this->v = out.v;
-	return out;
+	std::valarray<double> gen = this->generalise();
+	gen = S3D::rotateMatrix(x, y, z) * gen;
+	this->GenToV3D(gen);
+	return *this;
 }
 
 Vec3D Vec3D::rotate(Vec3D pivot, double x, double y, double z) {//wrt a point
@@ -55,32 +55,35 @@ Vec3D Vec3D::translate(double x, double y, double z) {
 }
 
 Matrix S3D::rotateXMatrix(double x){
-  Matrix M(3);
+  Matrix M(4);
   M(0,0) = 1;
   M(1,1) = cos(x);
   M(1,2) = -sin(x);
   M(2,1) = sin(x);
   M(2,2) = cos(x);
+  M(3, 3) = 1;
   return M;
 }
 
 Matrix S3D::rotateYMatrix(double y){
-  Matrix M(3);
+  Matrix M(4);
   M(0,0) = cos(y);
   M(0,2) = sin(y);
   M(1,1) = 1;
   M(2,0) = -sin(y);
   M(2,2) = cos(y);
+  M(3, 3) = 1;
   return M;
 }
 
 Matrix S3D::rotateZMatrix(double z){
-  Matrix M(3);
+  Matrix M(4);
   M(0,0) = cos(z);
   M(0,1) = -sin(z);
   M(1,0) = sin(z);
   M(1,1) = cos(z);
   M(2,2) = 1;
+  M(3, 3) = 1;
   return M;
 }
 

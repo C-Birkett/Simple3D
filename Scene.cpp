@@ -9,6 +9,7 @@ Scene::Scene(){}
 Scene::Scene(SDL_Renderer* r){
   renderer = r;
   camera = new Camera(this);
+  objects.push_back(camera);
 }
 
 void Scene::Draw() {
@@ -16,7 +17,7 @@ void Scene::Draw() {
 }
 
 void Scene::Update() {
-    //for (auto& o : this->objects) { o->Update(); }
+    for (auto& o : this->objects) { o->Update(); }
     this->camera->Update();
 }
 
@@ -80,9 +81,26 @@ void Scene::DrawPoints(std::vector<Vec3D> pts){
 }
 
 GameObject* Scene::CreateObject(){
-  Vec3D pos(0,0,20);
+  Vec3D pos(0,0,0);
   auto testCube = new Cube(pos, 100);
   testCube->scene = this;
   this->objects.push_back(testCube);
   return testCube;
 }
+
+GameObject* Scene::CreateCube(Vec3D pos, double size) {
+    auto myCube = new Cube(pos, size);
+    myCube->scene = this;
+    this->objects.push_back(myCube);
+    return myCube;
+}
+
+/*
+template <class T>
+Scene::CreateObject<T>(Vec3D pos) {
+    auto newObject = new T(pos, 100);
+    newObject->scene = this;
+    this->objects.push_back(newObject);
+    return testCube;
+}
+*/

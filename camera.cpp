@@ -1,11 +1,8 @@
 #include "camera.h"
 
 void Camera::genCamMat(){
-  Matrix out(4);
-  out.zeros();
-
   // translate to camera pos
-  out = S3D::translateMatrix(- this->pos);
+  Matrix out = S3D::translateMatrix(- this->pos);
 
   /*
   Vec3D zAxis = (this->target - this->pos).normalise();
@@ -35,13 +32,11 @@ void Camera::genClipMat(){
   Matrix out(4);
   out.zeros();
 
-  out(0,0) = this->fov*this->aspectRatio;
-  out(1,1) = this->fov;
-  out(2,2) = (far+near)/(far-near);
-  out(2,3) = 1;
-  out(3, 2) = (2 * near * far) / (near - far);
-
-
+  out(0, 0) = this->fov * this->aspectRatio;
+  out(1, 1) = this->fov;
+  out(2, 2) = (this->far + this->near) / (this->far - this->near);
+  out(2, 3) = 1;
+  out(3, 2) = (2 * this->near * this->far) / (this->near - this->far);
 
   *this->clipMat = out;
 }
