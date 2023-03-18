@@ -1,0 +1,2 @@
+/usr/bin/ar qc libS3D.a  CMakeFiles/S3D.dir/3D.cpp.o CMakeFiles/S3D.dir/camera.cpp.o CMakeFiles/S3D.dir/matrix.cpp.o CMakeFiles/S3D.dir/polyhedron.cpp.o CMakeFiles/S3D.dir/Scene.cpp.o
+/usr/bin/ranlib libS3D.a

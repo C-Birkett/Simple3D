@@ -1,5 +1,9 @@
-.vs/
+.vs*
+
 x64/
 Debug/
 
-3D\ Demo.*
+*.json
+*.AppImage
+/.clangd/
+/.build/

@@ -1,0 +1,1 @@
+/usr/bin/g++  -g  -rdynamic CMakeFiles/Simple3D.dir/src/main.cpp.o  -o Simple3D  src/libS3D.a -L/usr/lib/x86_64-linux-gnu  -lSDL2 -lSDL2_image 
