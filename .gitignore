@@ -6,4 +6,4 @@ Debug/
 *.json
 *.AppImage
 /.clangd/
-/.build/
+/build/
