@@ -10,6 +10,7 @@ polyhedron.h
 polyhedron.cpp
 Scene.h
 Scene.cpp
+Globals.h
 )
 
 target_include_directories(S3D

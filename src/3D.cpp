@@ -1,60 +1,63 @@
 #include "3D.h"
 
-Vec3D Vec3D::cross(Vec3D v2){
-  auto v1 = *this;
-
-  double x = v1.y()*v2.z() - v1.z()*v2.y();
-  double y = v1.x()*v2.z() - v1.z()*v2.x();
-  double z = v1.x()*v2.y() - v1.y()*v2.x();
-
-  Vec3D out(x,y,z);
-  return out;
+inline double Vec3D::Dot(const Vec3D& v2){
+  return (v*v2.v).sum();
 }
 
-double Vec3D::dot(Vec3D v2){
-  auto v1 = *this;
-  double out = (v1.v*v2.v).sum();
-  return out;
+inline Vec3D Vec3D::Cross(const Vec3D& v2)
+{
+  return Vec3D (
+    y()*v2.z() - z()*v2.y(),
+    x()*v2.z() - z()*v2.x(),
+    x()*v2.y() - y()*v2.x());
 }
 
-Vec3D Vec3D::normalise(){
-  double lensqrd = (this->v*this->v).sum();
-  double invrslen = 1.0/pow(lensqrd, 0.5);
-  this->v *= invrslen;
+inline Vec3D Vec3D::Normalise(){
+  double lensqrd = (v*v).sum();
+  double invrslen = pow(lensqrd, -0.5);
+  v *= invrslen;
   return *this;
 }
 
-Vec3D Vec3D::rotate(double x, double y, double z) {//wrt axes
-	std::valarray<double> gen = this->generalise();
-	gen = S3D::rotateMatrix(x, y, z) * gen;
-	this->GenToV3D(gen);
+//inline Vec3D Vec3D::Transform(const Matrix& Mat, bool normalise /* = true*/) //wrt axes
+//{
+//	v = Mat * v;
+//  if(normalise) NormaliseW();
+//	return *this;
+//}
+
+// inline gives linker err :(
+Vec3D Vec3D::Transform(Matrix* Mat, bool normalise /* = true*/) //wrt axes
+{
+	v = (*Mat) * v;
+  if(normalise) NormaliseW();
+  return *this;
+}
+
+inline Vec3D Vec3D::Rotate(double x, double y, double z, bool normalise /* = true*/) //wrt axes
+{
+	v = S3D::rotateMatrix(x, y, z) * v;
+  if(normalise) NormaliseW();
 	return *this;
 }
 
-Vec3D Vec3D::rotate(Vec3D pivot, double x, double y, double z) {//wrt a point
-	this->translate(-pivot);
-	this->rotate(x, y, z);
-	this->translate(pivot);
+Vec3D Vec3D::Rotate(const Vec3D& pivot, double x, double y, double z, bool normalise /* = true*/) //wrt a point
+{	
+  Translate(-pivot, false);
+	Rotate(x, y, z, false);
+	Translate(pivot, normalise);
 	return *this;
 }
 
-Vec3D Vec3D::translate(double x, double y, double z) {
-	Matrix T = S3D::translateMatrix(x, y, z);
-
-	/*
-	this->v = T * this->v;
-	this->GenToV3D();
-	*/
-
-	std::valarray<double> gen = this->generalise();
-
-	gen = T * gen;
-	this->GenToV3D(gen);
-
+inline Vec3D Vec3D::Translate(double x, double y, double z, bool normalise /* = true*/)
+{
+	v = S3D::translateMatrix(x, y, z) * v;
+  if(normalise) NormaliseW();
 	return *this;
 }
 
-Matrix S3D::rotateXMatrix(double x){
+Matrix S3D::rotateXMatrix(double x)
+{
   Matrix M(4);
   M(0,0) = 1;
   M(1,1) = cos(x);
@@ -104,8 +107,4 @@ Matrix S3D::translateMatrix(double x, double y, double z) {
 	M(3, 2) = z;
 
 	return M;
-}
-
-Matrix S3D::translateMatrix(Vec3D v) {
-	return S3D::translateMatrix(v.x(), v.y(), v.z());
 }

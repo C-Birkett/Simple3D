@@ -2,13 +2,12 @@
 
 #include "gameObject.h"
 #include "3D.h"
+#include <ostream>
 
 class Polyhedron : public GameObject{
-  protected:
+  public:
     std::vector<Vec3D> vertices;
     std::vector<S3D::Polygon> polys;
-
-  public:
     
     Polyhedron(){};
     ~Polyhedron(){};
@@ -22,9 +21,12 @@ class Polyhedron : public GameObject{
 
     void Translate(double x, double y, double z);
     void Translate(Vec3D t);
+    
+    void PrintVerts() {for (auto& vert : vertices) vert.print(); std::cout<<std::endl;}
+    void PrintPolys() {for (auto& poly : polys) S3D::PrintPoly((poly));}
 
-    std::vector<Vec3D> getVerts(){return vertices;}
-    std::vector<S3D::Polygon> getPolys(){return polys;}
+    //std::vector<Vec3D> getVerts(){return vertices;}
+    //std::vector<S3D::Polygon> getPolys(){return polys;}
 };
 
 class Cube : public Polyhedron{

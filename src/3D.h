@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cmath>
+//#include <cmath>
 #include <valarray>
 #include <vector>
 #include <iostream>
+#include <cassert>
 
 #include "matrix.h"
 
@@ -11,90 +12,111 @@
 class Vec3D{
   public:
   // 0 by default
-  std::valarray<double> v = {0,0,0};
-  int w = 1;
+  std::valarray<double> v = {0,0,0,1};
+  
+  // get and set
+  double x(void) const {return v[0];}
+  double y(void) const {return v[1];}
+  double z(void) const {return v[2];}
+  double w(void) const {return v[3];}
 
-  Vec3D(){}
-  Vec3D(double x, double y, double z){
-    v[0] = x;
-    v[1] = y;
-    v[2] = z;
-  }
+  void Setx(double xin) {v[0] = xin;}
+  void Sety(double yin) {v[1] = yin;}
+  void Setz(double zin) {v[2] = zin;}
+  void Setw(double win) {v[3] = win;}
+
+  Vec3D() {};
+
+  // copy constructors
+  Vec3D(const std::valarray<double>& val)
+    : v(val)
+  {}
+  
+  Vec3D(const Vec3D& vec) 
+    : v(vec.v)
+  {}
+
+  Vec3D(double xin, double yin, double zin)
+    : v({xin,yin,zin,1})
+  {}
+
+  Vec3D(double xin, double yin, double zin, double win)
+    : v({xin,yin,zin,win}) 
+  {}
 
   ~Vec3D(){};
+  
+  Vec3D& operator=(const Vec3D& vec)
+  {
+    double prevW = w();
+    v = vec.v;
+    Setw(prevW);
+    return *this;
+  }
 
   //cross and dot product
-  Vec3D cross(Vec3D v2);
-
-  double dot(Vec3D v2);
-
-  Vec3D normalise();
-
-  //access individual coords
-  double x(){return v[0];}
-  double y(){return v[1];}
-  double z(){return v[2];}
-  //double w() { return w; }
-
-  void setX(double x) { v[0] = x; }
-  void setY(double y) { v[1] = y; }
-  void setZ(double z) { v[2] = z; }
-  //void setW(double newW) { w = newW; }
+  double Dot(const Vec3D& v2);
+  Vec3D Cross(const Vec3D& v2);
 
   //generalised vector
-  std::valarray<double> generalise() {
+  std::valarray<double> Generalise() {
       std::valarray<double> v3Dgen(0.0, 4);
       for (int i = 0; i < 3; i++) {
-          v3Dgen[i] = this->v[i];
+          v3Dgen[i] = v[i];
       }
-      v3Dgen[3] = w;  //w = 1 by default
+      v3Dgen[3] = w();  //w = 1 by default
       return v3Dgen;
   }
-
-  //normalise generalised back to Vec3D
-  /*
-  Vec3D GenToV3D() {
-      //normalise wrt w
-      double w = this->v[3];
-      this->v = this->v / w;
-      return *this;
+  
+  Vec3D Normalise();
+  
+  Vec3D NormaliseW()
+  {
+    v = v / w();
+    Setw(1);
+    return *this;
   }
-  */
 
   Vec3D GenToV3D(std::valarray<double> gen) {
       //normalise wrt w
-      this->w = gen[3];
-      gen = gen / w;
+      Setw(gen[3]);
+      gen = gen / w();
       for (int i = 0; i < 3; i++) {
           this->v[i] = gen[i];
       }
-      this->w = 1;
+      Setw(1);
       return *this;
   }
 
   //linear transformations
-  Vec3D rotate(double x, double y, double z); //wrt axes
+  //Vec3D Transform(const Matrix& Mat, bool normalise = true);
+  Vec3D Transform(Matrix* Mat, bool normalise = true);
 
-  Vec3D rotate(Vec3D pivot,  double x, double y, double z); //wrt a point
-  Vec3D rotate(Vec3D pivot, Vec3D rot) {return this->rotate(pivot, rot.x(), rot.y(), rot.z());}
-
-  Vec3D translate(double x, double y, double z);
-  Vec3D translate(Vec3D v) {return this->translate(v.x(), v.y(), v.z());}
-
-  Vec3D operator-(Vec3D v2){
-    auto &v1 = *this;
-    Vec3D out;
-    out.v = v1.v - v2.v;
-    return out;
+  Vec3D Rotate(double x, double y, double z, bool normalise = true); //wrt axes
+  Vec3D Rotate(const Vec3D& pivot,  double x, double y, double z, bool normalise = true); //wrt a point
+  const Vec3D Rotate(const Vec3D& pivot, Vec3D rot, bool normalise = true) 
+  {
+    return Rotate(pivot, rot.x(), rot.y(), rot.z(), normalise);
   }
 
-  Vec3D operator-() {
-      auto &v1 = *this;
-      Vec3D v2; //zeros
-      return v2-v1;
+  Vec3D Translate(double x, double y, double z, bool normalise = true);
+  const Vec3D Translate(const Vec3D& vec, bool normalise = true) 
+  {
+    return Translate(vec.x(), vec.y() , vec.z(), normalise);
   }
 
-  void operator-=(Vec3D v2) {
+  Vec3D operator-(const Vec3D v2){
+    return Vec3D(v - v2.v);
+  }
+
+  Vec3D operator-() const 
+  {
+      return Vec3D(-v);
+      print();
+  }
+
+  void operator-=(Vec3D v2) 
+  {
       auto& v1 = *this;
       v1.v = v1.v - v2.v;
   }
@@ -136,35 +158,44 @@ class Vec3D{
       out.v = M * v1.v;
       return out;
   }
-
-  bool operator==(Vec3D v2){
-    auto &v1 = *this;
-    //return v1.v == v2.v;
-    if((v1.x() != v2.x())||(v1.y() != v2.y())||(v1.z() != v2.z())){
-      return false;
-    }else{
-      return true;
+  
+  bool generalisedEquals(const Vec3D& v2)
+    {
+      return std::equal(std::begin(v), std::end(v), std::begin(v2.v));
     }
+
+  bool operator==(const Vec3D& v2){
+    return x() == v2.x()
+        && y() == v2.y()
+        && z() == v2.z();
   }
 
   bool operator!=(Vec3D v2){
-    auto &v1 = *this;
-    return !(v1==v2);
+    return !(*this==v2);
   }
 
-  void print(){
-    std::cout<<v[0]<<" "<<v[1]<<" "<<v[2]<<std::endl;}
+  void print(bool wantW = false) const
+  {
+    std::cout << v[0]<<" "<<v[1]<<" "<<v[2];
+    if (wantW) std::cout << " " << v[3];
+    std::cout << std::endl;
+  }
 };
 
-
 //space3D
-namespace S3D {
-
+namespace S3D 
+{
   //2D polygon in 3D space
-  struct Polygon{
-    std::vector<Vec3D*> verts;
-    int nverts;
-  };
+  
+  typedef std::vector<Vec3D*> Polygon;
+  inline void PrintPoly(const Polygon& poly, bool wantW = false)
+  {
+    for (auto vert : poly)
+      {
+        vert->print();
+      }
+      std::cout<<std::endl;
+  }
   
   //xyz in radians
   Matrix rotateXMatrix(double x);
@@ -173,7 +204,5 @@ namespace S3D {
   Matrix rotateMatrix(double x, double y, double z);
 
   Matrix translateMatrix(double x, double y, double z);
-  Matrix translateMatrix(Vec3D v);
-  
-
+  inline Matrix translateMatrix(const Vec3D& v) {return translateMatrix(v.x(), v.y(), v.z());}
 }

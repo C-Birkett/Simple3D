@@ -1,8 +1,12 @@
 #include "camera.h"
+#include "3D.h"
+#include "Globals.h"
+#include <cassert>
 
-void Camera::genCamMat(){
+void Camera::genCamMat()
+{
   // translate to camera pos
-  Matrix out = S3D::translateMatrix(- this->pos);
+  Matrix out = S3D::translateMatrix(-pos);
 
   /*
   Vec3D zAxis = (this->target - this->pos).normalise();
@@ -28,7 +32,8 @@ void Camera::genCamMat(){
   *this->camMat = out;
 }
 
-void Camera::genClipMat(){
+void Camera::genClipMat()
+{
   Matrix out(4);
   out.zeros();
 
@@ -42,8 +47,8 @@ void Camera::genClipMat(){
 }
 
 
-bool Camera::ViewClip(std::valarray<double> v3D) {
-    
+bool Camera::ViewClip(std::valarray<double> v3D) 
+{
     //apply inverse camera transform and clipping matrices
     v3D = *this->camMat * v3D;
 
@@ -54,31 +59,30 @@ bool Camera::ViewClip(std::valarray<double> v3D) {
     else  return true;
 }
 
-
- SDL_Point Camera::Project(Vec3D* v3D){
-
-    //generalised vector
-    std::valarray<double> v3Dgen = v3D->generalise();
-
+ SDL_Point Camera::Project(Vec3D v3D)
+ {
+    Vec3D vec(v3D);
     //apply inverse camera transform and clipping matrices
     // TODO dont fo this transform twice
-    v3Dgen = *this->camMat * v3Dgen;
-
-    v3Dgen = *this->clipMat * v3Dgen;
+    vec.Transform(camMat, false);
+    vec.Transform(clipMat, false);
 
     SDL_Point out;
-    out.x = (v3Dgen[0]*WIDTH) / (2.0*v3Dgen[3]) + (WIDTH/2);
-    out.y = (v3Dgen[1]*HEIGHT) / (2.0*v3Dgen[3]) + (HEIGHT/2);
+    out.x = (vec.x()*GLOBAL::WINDOW_WIDTH) / (2.0*vec.w()) + (GLOBAL::WINDOW_WIDTH/2);
+    out.y = (vec.y()*GLOBAL::WINDOW_HEIGHT) / (2.0*vec.w()) + (GLOBAL::WINDOW_HEIGHT/2);
   
     return out;
 }
 
-void Camera::Update(){
+void Camera::Update()
+{
   Vec3D zero;
-  if((this->vel != zero) || (this->acc != zero)){
-        this->vel += this->acc;
-        this->pos += this->vel;
+  if(vel != zero
+  || acc != zero)
+  {
+        vel += acc;
+        pos += vel;
 
-        this->genCamMat();
+        genCamMat();
       } 
 };

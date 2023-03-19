@@ -7,8 +7,6 @@
 #include "3D.h"
 #include "matrix.h"
 
-const int WIDTH = 600, HEIGHT = 600;
-
 class Camera : public GameObject{
   private:
     Vec3D target;
@@ -31,10 +29,9 @@ class Camera : public GameObject{
   public:
     
     Camera(Scene* s){
-      this->scene = s;
-      pos = {0,0,0};
-      target = {0,0,0}; //look in world z
-      up = {0,1,0}; //up = world y
+      scene = s;
+      target.Setz(1); //look in world z
+      up.Sety(1); //up = world y
 
       fov = 1.0/tan(90/2.0);
       aspectRatio = 1;
@@ -61,5 +58,6 @@ class Camera : public GameObject{
 
     bool ViewClip(std::valarray<double> v3D);
 
-    SDL_Point Project(Vec3D* v3D);
+    SDL_Point Project(Vec3D v3D);
+    //SDL_Point Project(Vec3D* v3D) {return Project(*v3D);};
 };

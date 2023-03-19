@@ -1,39 +1,25 @@
 #include "matrix.h"
+#include <cassert>
 
-std::valarray<double> Matrix::row(int r){
-  std::valarray<double> output(this->cols);
-  output = this->data[std::slice(r*this->cols, this->cols, 1)];
-  return output;
-}
+Matrix Matrix::operator*(const Matrix& M2) const{
+  static const Matrix* M1 = this;
 
-std::valarray<double> Matrix::col(int c){
-  std::valarray<double> output(this->rows);
-  output = this->data[std::slice(c, this->rows, this->cols)];
-  return output;
-}
-
-Matrix Matrix::operator*(Matrix M2){
-  Matrix* M1 = this;
-
-  //assert(M1->cols == M2->rows, "Matrix multiplication correct size");
-  Matrix output(M1->rows, M2.cols);
+  assert(M1->cols == M2.rows);
+  Matrix result(M1->rows, M2.cols);
   
-  for(int r = 0; r < M1->rows; r++){
-    for(int c = 0; c < M2.cols; c++){
-      output(r, c) = (M1->row(r)*M2.col(c)).sum();
+  for(int rw = 0; rw < M1->rows; rw++){
+    for(int cl = 0; cl < M2.cols; cl++){
+      result(rw, cl) = (M1->row(rw)*M2.col(cl)).sum();
     }
   }
-  return output;
+  return result;
 }
 
-std::valarray<double> Matrix::operator*(std::valarray<double> M2){
-  Matrix* M1 = this;
-
-  //std::assert("Matrix multiplication correct size", M1->cols == M2->rows);
+std::valarray<double> Matrix::operator*(std::valarray<double> M2) const{
   std::valarray<double> output(M2.size());
   
-  for(int c = 0; c < M1->cols; c++){
-    output[c] = (M1->col(c)*M2).sum();
+  for(int c = 0; c < M2.size(); c++){
+    output[c] = (col(c)*M2).sum();
   }
   return output;
 }

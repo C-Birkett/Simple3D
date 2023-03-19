@@ -1,11 +1,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_error.h>
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_video.h>
 
 #include <iostream>
 #include <valarray>
+
+#include "Globals.h"
 
 #include "matrix.h"
 #include "3D.h"
@@ -16,8 +20,6 @@
 
 #define FPS_POLL_INTERVAL 1.0 //seconds
 #define FPS_TARGET 60.0f
-
-//const int WIDTH = 600, HEIGHT = 600;
 
 int main(int argc, char* argv[]) {
 
@@ -34,7 +36,7 @@ int main(int argc, char* argv[]) {
   window = SDL_CreateWindow("C++ Example",
                                         SDL_WINDOWPOS_UNDEFINED,
                                         SDL_WINDOWPOS_UNDEFINED,
-                                        WIDTH, HEIGHT,
+                                        GLOBAL::WINDOW_WIDTH, GLOBAL::WINDOW_HEIGHT,
                                         SDL_WINDOW_ALLOW_HIGHDPI);
   if(window == NULL) {
     printf("Could not create window: %s\n", SDL_GetError());
@@ -66,21 +68,49 @@ int main(int argc, char* argv[]) {
 
   // initialise some cubes
   std::vector<Cube*> myCubes;
+  Cube* cube = (Cube*)gameScene->CreateCube(Vec3D(), 100);
+  myCubes.emplace_back(cube);
+  /*
   myCubes.reserve(9);
-  for (int i = -1; i <= 1; i++) {
-      for (int j = -1; j <= 1; j++) {
+  for (int i = -1; i <= 1; i++) 
+  {
+      for (int j = -1; j <= 1; j++) 
+      {
           auto newCube = (Cube*)gameScene->CreateCube(Vec3D(200 * i, 200 * j, 250), 100);
           myCubes.push_back(newCube);
       }
   }
+  */
 
   // event handling
   SDL_Event event;
 
   // main loop
-  while(!quit) {
+  while(!quit) \
+  {
+    // poll events & handle inputs
+    const Uint8* kb = SDL_GetKeyboardState(NULL);
+    
+    if(kb[SDL_SCANCODE_ESCAPE])
+    {
+        quit = true;
+    }
+    
+    gameScene->getCamera()->vel = Vec3D(
+        10 * kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A],
+        10 * kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT],
+        10 * kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S]
+    );
+    
+    if(kb[SDL_SCANCODE_R])
+    {
+        for (auto& c : myCubes) 
+        {
+            c->omega = Vec3D(rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2));
+        }
+    }
 
-      // poll events & handle inputs
+    /*
     if(SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
@@ -114,12 +144,15 @@ int main(int argc, char* argv[]) {
                     break;
 
                 case SDLK_r:
-                    for (auto& c : myCubes) {
-                        c->omega = Vec3D(rand() % 10 * (M_PI / 2), rand() % 10 * (M_PI / 2), rand() % 10 * (M_PI / 2));
+                    for (auto& c : myCubes) 
+                    {
+                        c->omega = Vec3D(rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2));
                     }
                     break;
+
                 case SDLK_p:
-                    for (auto c : myCubes) {
+                    for (auto c : myCubes) 
+                    {
                         c->omega = Vec3D(0, 0, 0);
                     }
                     break;
@@ -167,6 +200,7 @@ int main(int argc, char* argv[]) {
             break;
       }
     }
+  */
 
 
 
