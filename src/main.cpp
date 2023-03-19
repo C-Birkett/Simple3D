@@ -1,13 +1,16 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_scancode.h>
+#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
 #include <iostream>
 #include <valarray>
+#include <cassert>
 
 #include "Globals.h"
 
@@ -20,6 +23,9 @@
 
 #define FPS_POLL_INTERVAL 1.0 //seconds
 #define FPS_TARGET 60.0f
+
+//#define PRINT_FPS
+//#define PRINT_PERFORMANCE
 
 int main(int argc, char* argv[]) {
 
@@ -47,14 +53,21 @@ int main(int argc, char* argv[]) {
   renderer = SDL_CreateRenderer(window, -1, 0);
 
   // fps counting
+  Uint64 time_last = SDL_GetTicks(); //last time fps recorded
+
   Uint64 fps_now = SDL_GetPerformanceCounter(); //current time
   Uint64 fps_last = 0; //the last recorded time.
 
   double fps_deltatime = 0; // time between frames
   
-  Uint64 fps_lasttime = SDL_GetTicks(); //last time fps recorded
   Uint64 fps_current; //the current FPS.
   Uint64 fps_frames = 0; //frames passed since the last recorded fps.
+  
+  // update and draw performance
+  Uint64 time_update = 0;
+  Uint64 time_draw = 0;
+  double dt_update = 0;
+  double dt_draw = 0;
 
   // seed randoms
   srand(fps_now);
@@ -68,9 +81,12 @@ int main(int argc, char* argv[]) {
 
   // initialise some cubes
   std::vector<Cube*> myCubes;
-  Cube* cube = (Cube*)gameScene->CreateCube(Vec3D(), 100);
-  myCubes.emplace_back(cube);
-  /*
+
+    // onecube
+  //Cube* cube = (Cube*)gameScene->CreateCube(Vec3D(0,0,250), 100);
+  //myCubes.emplace_back(cube);
+
+    // 3x3 cube array
   myCubes.reserve(9);
   for (int i = -1; i <= 1; i++) 
   {
@@ -80,82 +96,49 @@ int main(int argc, char* argv[]) {
           myCubes.push_back(newCube);
       }
   }
-  */
 
   // event handling
   SDL_Event event;
+    
+    // keyboard handling
+    const Uint8* kb = SDL_GetKeyboardState(nullptr);
 
   // main loop
   while(!quit) \
   {
     // poll events & handle inputs
-    const Uint8* kb = SDL_GetKeyboardState(NULL);
-    
+    SDL_PumpEvents();
+
+    if(SDL_PollEvent(&event)) 
+    {
+      switch(event.type) 
+      {
+        case SDL_QUIT:
+          quit = true;
+          break;
+      }
+    }
+
     if(kb[SDL_SCANCODE_ESCAPE])
     {
         quit = true;
     }
-    
-    gameScene->getCamera()->vel = Vec3D(
-        10 * kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A],
-        10 * kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT],
-        10 * kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S]
-    );
-    
-    if(kb[SDL_SCANCODE_R])
+    if(kb[SDL_SCANCODE_R]) //spinem
     {
         for (auto& c : myCubes) 
         {
             c->omega = Vec3D(rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2));
         }
     }
+    if(kb[SDL_SCANCODE_P])
+    {
+        for (auto c : myCubes) 
+        {
+            c->omega = Vec3D(0, 0, 0);
+        }
+    }
 
-    /*
-    if(SDL_PollEvent(&event)) {
-      switch(event.type) {
-        case SDL_QUIT:
-          quit = true;
-          break;
-        
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.sym) {
-                case SDLK_w: 
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 10);
-                    break;
-
-                case SDLK_a:
-                    gameScene->getCamera()->vel = Vec3D(-10, 0, 0);
-                    break;
-
-                case SDLK_s:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, -10);
-                    break;
-                
-                case SDLK_d:
-                    gameScene->getCamera()->vel = Vec3D(10, 0, 0);
-                    break;
-
-                case SDLK_SPACE:
-                    gameScene->getCamera()->vel = Vec3D(0, -10, 0);
-                    break;
-
-                case SDLK_LSHIFT:
-                    gameScene->getCamera()->vel = Vec3D(0, 10, 0);
-                    break;
-
-                case SDLK_r:
-                    for (auto& c : myCubes) 
-                    {
-                        c->omega = Vec3D(rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2), rand() % 10 * (M_PI_2));
-                    }
-                    break;
-
-                case SDLK_p:
-                    for (auto c : myCubes) 
-                    {
-                        c->omega = Vec3D(0, 0, 0);
-                    }
-                    break;
+/*
                 // not working currently
                 case SDLK_t:
                     gameScene->getCamera()->incrementFar(100);
@@ -163,54 +146,22 @@ int main(int argc, char* argv[]) {
                 case SDLK_g:
                     gameScene->getCamera()->incrementFar(-100);
                     break;
-            }
-            break;
-        case SDL_KEYUP:
-            switch (event.key.keysym.sym) {
-                case SDLK_w:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(0, 0, 10);
-                    break;
-                
-                case SDLK_a:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(-10, 0, 0);
-                    break;
-
-                case SDLK_s:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(0, 0, -10);
-                    break;
-
-                case SDLK_d:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(10, 0, 0);
-                    break;
-
-                case SDLK_SPACE:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(0, -10, 0);
-                    break;
-
-                case SDLK_LSHIFT:
-                    gameScene->getCamera()->vel = Vec3D(0, 0, 0);
-                    //gameScene->getCamera()->vel -= Vec3D(0, 10, 0);
-                    break;
-            }
-            break;
-      }
-    }
-  */
-
-
+                    */
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    time_update = SDL_GetPerformanceCounter();
     gameScene->Update();
-    gameScene->Draw();
+    time_update = SDL_GetPerformanceCounter() - time_update;
 
+    time_draw = SDL_GetPerformanceCounter();
+    gameScene->Draw();
+    time_draw = SDL_GetPerformanceCounter() - time_draw;
+    
     SDL_RenderPresent(renderer);
+    
+    // Framerate and timing:
 
     //get deltatime between frames
     fps_last = fps_now;
@@ -222,12 +173,20 @@ int main(int argc, char* argv[]) {
 
     //poll framerate every FPS_POLL_INTERVAL
     fps_frames++;
-    if (fps_lasttime < SDL_GetTicks() - FPS_POLL_INTERVAL * 1000)
+    if (time_last < SDL_GetTicks() - FPS_POLL_INTERVAL * 1000)
     {
-        fps_lasttime = SDL_GetTicks();
+        time_last = SDL_GetTicks();
         fps_current = fps_frames;
         fps_frames = 0;
-        std::cout << "fps: " << fps_current << std::endl;
+        #ifdef PRINT_FPS
+            std::cout << "fps: " << fps_current << std::endl << std::endl;
+        #endif
+        #ifdef PRINT_PERFORMANCE
+            dt_update = time_update / (double)SDL_GetPerformanceFrequency();
+            dt_draw = time_draw / (double)SDL_GetPerformanceFrequency();
+            std::cout << "-Update time: " << dt_update << std::endl;
+            std::cout << "-Draw time: " << dt_draw << std::endl;
+        #endif
     }
 
     //wait to maintain target framerate

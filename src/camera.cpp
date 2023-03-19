@@ -37,13 +37,13 @@ void Camera::genClipMat()
   Matrix out(4);
   out.zeros();
 
-  out(0, 0) = this->fov * this->aspectRatio;
-  out(1, 1) = this->fov;
-  out(2, 2) = (this->far + this->near) / (this->far - this->near);
+  out(0, 0) = fov * aspectRatio;
+  out(1, 1) = fov;
+  out(2, 2) = (far + near) / (far - near);
   out(2, 3) = 1;
-  out(3, 2) = (2 * this->near * this->far) / (this->near - this->far);
+  out(3, 2) = (2 * near * far) / (near - far);
 
-  *this->clipMat = out;
+  *clipMat = out;
 }
 
 
@@ -68,14 +68,16 @@ bool Camera::ViewClip(std::valarray<double> v3D)
     vec.Transform(clipMat, false);
 
     SDL_Point out;
-    out.x = (vec.x()*GLOBAL::WINDOW_WIDTH) / (2.0*vec.w()) + (GLOBAL::WINDOW_WIDTH/2);
-    out.y = (vec.y()*GLOBAL::WINDOW_HEIGHT) / (2.0*vec.w()) + (GLOBAL::WINDOW_HEIGHT/2);
-  
+    out.x = (vec.x()*GLOBAL::WINDOW_WIDTH) / (2.0*vec.w()) + (GLOBAL::WINDOW_WIDTH/2.0);
+    out.y = (vec.y()*GLOBAL::WINDOW_HEIGHT) / (2.0*vec.w()) + (GLOBAL::WINDOW_HEIGHT/2.0);
+    
     return out;
 }
 
 void Camera::Update()
 {
+  HandleKeyboardInput();
+
   Vec3D zero;
   if(vel != zero
   || acc != zero)
@@ -86,3 +88,12 @@ void Camera::Update()
         genCamMat();
       } 
 };
+
+void Camera::HandleKeyboardInput()
+  {
+    static const Uint8* kb = SDL_GetKeyboardState(nullptr);
+    
+    vel.Setx(10 * (kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A]));
+    vel.Sety(10 * (kb[SDL_SCANCODE_LSHIFT] - kb[SDL_SCANCODE_SPACE]));
+    vel.Setz(10 * (kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S]));
+  }

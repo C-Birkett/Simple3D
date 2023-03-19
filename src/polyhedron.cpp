@@ -11,6 +11,7 @@ void Polyhedron::Update()
     Vec3D dv = acc * dt;
     vel.Translate(dv);
 
+    // TODO add threshholds to set to 0
     // rotate
     omega.v *= 0.975;   // damping
     Vec3D dTheta = omega * dt;

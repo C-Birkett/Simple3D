@@ -25,6 +25,8 @@ class Camera : public GameObject{
     // clip camera space
     Matrix* clipMat;
     void genClipMat();
+    
+    void HandleKeyboardInput();
 
   public:
     

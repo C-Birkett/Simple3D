@@ -3,6 +3,7 @@
 #include "3D.h"
 #include "polyhedron.h"
 #include "camera.h"
+#include <SDL2/SDL_rect.h>
 
 Scene::Scene(){}
 
@@ -26,10 +27,12 @@ void Scene::Update()
 
 std::vector<SDL_Point> Scene::Project3DPolyTo2D(const S3D::Polygon& poly)
 {
-  std::vector<SDL_Point> out(poly.size());
+  std::vector<SDL_Point> out;
+  out.reserve(poly.size());
 
   for(auto& vert : poly)
   {
+    //TODO
       /*
       //check for lines intersecting near clip plane
       //if vert outside near clip
@@ -54,7 +57,7 @@ std::vector<SDL_Point> Scene::Project3DPolyTo2D(const S3D::Polygon& poly)
 
       out.emplace_back(camera->Project(*vert));
   }
-
+  
   return out;
 }
 
