@@ -17,7 +17,7 @@ class Scene{
     std::vector<GameObject*> objects;
 
     //project using camera
-    std::vector<SDL_Point> Project3DPolyTo2D(const S3D::Polygon& p3D);
+    std::vector<SDL_Point> Project3DPolyTo2D(const S3D::Polygon& p3D, bool* badVerts);
     std::vector<SDL_Point> Project3DPointsTo2D(const std::vector<Vec3D>& pts);
 
   public:

@@ -1,9 +1,12 @@
 #include "Scene.h"
 
+#include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
+
 #include "3D.h"
 #include "polyhedron.h"
 #include "camera.h"
-#include <SDL2/SDL_rect.h>
+#include "Globals.h"
 
 Scene::Scene(){}
 
@@ -25,37 +28,36 @@ void Scene::Update()
     camera->Update();
 }
 
-std::vector<SDL_Point> Scene::Project3DPolyTo2D(const S3D::Polygon& poly)
+std::vector<SDL_Point> Scene::Project3DPolyTo2D(const S3D::Polygon& poly, bool* badEdges)
 {
+  // outputs
+  SDL_Point projPoint;
   std::vector<SDL_Point> out;
   out.reserve(poly.size());
 
-  for(auto& vert : poly)
+  // handle clipping
+  bool badEdge = false;
+  badEdges = nullptr;
+
+  static Vec3D inFront, behind, clipped;
+  double normalise;
+  
+  Vec3D* vert;
+  Vec3D* prevVert = nullptr;
+  for(int i = 0; i < poly.size(); i++)
   {
-    //TODO
-      /*
-      //check for lines intersecting near clip plane
-      //if vert outside near clip
-      if (this->camera->ViewClip(vert->generalise())) {
-          
-          
-          // check next vert
-          if (this->camera->ViewClip((vert + 1)->generalise())) {
-              continue; //don't draw
-          }
-          // find intersection
-          else {
+    vert = poly.at(i);
 
-          }
+    projPoint = camera->Project(*vert, badEdge);
+  
+    out.emplace_back(projPoint);
+    
+    if (badEdge) 
+      {
+      if(!badEdges) badEdges = new bool[poly.size()-1];
+      for (int b=0 ; b < poly.size()-1; b++) badEdges[b] = false;
+      badEdges[i-1] = true;
       }
-      else {
-          // find intersection of vert with near clip plane
-
-
-      }
-      */
-
-      out.emplace_back(camera->Project(*vert));
   }
   
   return out;
@@ -63,22 +65,45 @@ std::vector<SDL_Point> Scene::Project3DPolyTo2D(const S3D::Polygon& poly)
 
 std::vector<SDL_Point> Scene::Project3DPointsTo2D(const std::vector<Vec3D>& pts)
 {
-  std::vector<SDL_Point> out(pts.size());
-    for(int i=0; i < (int)pts.size(); i++)
-    {
-      out.at(i) = camera->Project(pts.at(i));
-    }
+  std::vector<SDL_Point> out;
+  out.reserve(pts.size());
+  bool negativeW;
+  SDL_Point projPoint;
+
+  for (auto& pt : pts)
+  {
+    projPoint = (camera->Project(pt, negativeW));
+    if(negativeW) out.emplace_back(projPoint);
+  }
 
   return out;
 }
 
 void Scene::DrawPolys(const std::vector<S3D::Polygon>& polys)
 {
+  bool* badEdges = nullptr;
   for(auto poly : polys)
   {
-    std::vector<SDL_Point> pts2D = Project3DPolyTo2D(poly);
+    std::vector<SDL_Point> pts2D = Project3DPolyTo2D(poly, badEdges);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLines(renderer, pts2D.data(), pts2D.size());
+
+    if(!badEdges)
+    {
+      SDL_RenderDrawLines(renderer, pts2D.data(), pts2D.size());
+    }
+    else // don't draw bad lines
+    {
+      for (int i = 1; i < pts2D.size(); i++)
+        {
+          SDL_Point prev = pts2D.at(i-1);
+          SDL_Point pnt = pts2D.at(i);
+          if(!badEdges[i-1])
+            {
+              SDL_RenderDrawLine(renderer, prev.x, prev.y, pnt.x, pnt.y);
+            }
+        }
+      delete badEdges;
+    }
   }
 }
 

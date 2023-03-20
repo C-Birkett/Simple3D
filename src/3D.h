@@ -48,9 +48,9 @@ class Vec3D{
   
   Vec3D& operator=(const Vec3D& vec)
   {
-    double prevW = w();
+    //double prevW = w();
     v = vec.v;
-    Setw(prevW);
+    //Setw(prevW);
     return *this;
   }
 

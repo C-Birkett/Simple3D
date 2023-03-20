@@ -59,18 +59,65 @@ bool Camera::ViewClip(std::valarray<double> v3D)
     else  return true;
 }
 
- SDL_Point Camera::Project(Vec3D v3D)
+ SDL_Point Camera::Project(Vec3D v3D, bool& badEdge)
  {
+    static Vec3D prev, inFront, behind, clipped;
+    static bool prevNegativeW = false;
     Vec3D vec(v3D);
+
     //apply inverse camera transform and clipping matrices
-    // TODO dont fo this transform twice
+    // TODO dont do this transform twice
     vec.Transform(camMat, false);
     vec.Transform(clipMat, false);
+    
+    //bool negativeW = vec.w() < GLOBAL::CAMERA_NEAR_CLIP;
+    bool negativeW = vec.w() <= 0.0;
 
     SDL_Point out;
-    out.x = (vec.x()*GLOBAL::WINDOW_WIDTH) / (2.0*vec.w()) + (GLOBAL::WINDOW_WIDTH/2.0);
-    out.y = (vec.y()*GLOBAL::WINDOW_HEIGHT) / (2.0*vec.w()) + (GLOBAL::WINDOW_HEIGHT/2.0);
     
+    if(!negativeW && !prevNegativeW) // normal case
+    {
+      out.x = (vec.x()*GLOBAL::WINDOW_WIDTH) / (2.0*vec.w()) + (GLOBAL::WINDOW_WIDTH/2.0);
+      out.y = (vec.y()*GLOBAL::WINDOW_HEIGHT) / (2.0*vec.w()) + (GLOBAL::WINDOW_HEIGHT/2.0);
+    }
+    else if(negativeW && prevNegativeW)
+    {
+        badEdge = true;
+    }
+    else // one point on edge is behind camera, find intersection with clip plane
+    {
+      if(negativeW && !prevNegativeW)
+      {
+        inFront = prev;
+        behind = vec;
+      }
+      else
+      {
+        inFront = vec;
+        behind = prev;
+      }
+      
+      inFront.print(true);
+      behind.print(true);
+
+      double normalise = (inFront.w() - GLOBAL::CAMERA_NEAR_CLIP) / (inFront.w() - behind.w());
+      
+      clipped.Setx((normalise * inFront.x()) + ((1-normalise) * behind.x()));
+      clipped.Sety((normalise * inFront.y()) + ((1-normalise) * behind.y()));
+      clipped.Setz((normalise * inFront.z()) + ((1-normalise) * behind.z()));
+      clipped.Setw(GLOBAL::CAMERA_NEAR_CLIP);
+
+      clipped.print(true);
+      std::cout<< clipped.x()*GLOBAL::WINDOW_WIDTH << std::endl;
+      std::cout<< (2.0*clipped.w()) + (GLOBAL::WINDOW_WIDTH/2.0) << std::endl;
+      std::cout<< clipped.x()*GLOBAL::WINDOW_WIDTH / ((2.0*clipped.w()) + (GLOBAL::WINDOW_WIDTH/2.0)) << std::endl;
+
+      out.x = (clipped.x()*GLOBAL::WINDOW_WIDTH) / (clipped.w()) + (GLOBAL::WINDOW_WIDTH/2.0);
+      out.y = (clipped.y()*GLOBAL::WINDOW_HEIGHT) / (clipped.w()) + (GLOBAL::WINDOW_HEIGHT/2.0);
+    }
+    
+    prev = vec;
+    prevNegativeW = negativeW;
     return out;
 }
 

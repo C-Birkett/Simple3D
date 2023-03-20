@@ -6,6 +6,7 @@
 #include "gameObject.h"
 #include "3D.h"
 #include "matrix.h"
+#include "Globals.h"
 
 class Camera : public GameObject{
   private:
@@ -37,8 +38,8 @@ class Camera : public GameObject{
 
       fov = 1.0/tan(90/2.0);
       aspectRatio = 1;
-      near = 0.1;
-      far = 10;
+      near = GLOBAL::CAMERA_NEAR_CLIP;
+      far = GLOBAL::CAMERA_FAR_CLIP;
 
       camMat = new Matrix(4);
       clipMat = new Matrix(4);
@@ -60,6 +61,6 @@ class Camera : public GameObject{
 
     bool ViewClip(std::valarray<double> v3D);
 
-    SDL_Point Project(Vec3D v3D);
+    SDL_Point Project(Vec3D v3D, bool& badEdge);
     //SDL_Point Project(Vec3D* v3D) {return Project(*v3D);};
 };
